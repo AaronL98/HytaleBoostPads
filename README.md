@@ -1,4 +1,5 @@
-# Hytale Plugin Template
+# HytaleBoostPads
 
-A template for Hytale java plugins. Created by Up, and slightly modified by Kaupenjoe. 
+Familiarizing myself with Hytale Modding by creating Boost Pads that launch players in a direction when they step on them.
 
+Makes use of Hytale's server-side modding capabilities to create custom block behavior.
