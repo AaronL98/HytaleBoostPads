@@ -7,11 +7,18 @@ import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
 import com.hypixel.hytale.math.vector.Transform;
 import com.hypixel.hytale.math.vector.Vector3d;
-import com.hypixel.hytale.server.core.Message;
+import com.hypixel.hytale.protocol.ChangeVelocityType;
+import com.hypixel.hytale.protocol.SoundCategory;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
+import com.hypixel.hytale.server.core.asset.type.soundevent.config.SoundEvent;
+import com.hypixel.hytale.server.core.modules.physics.component.Velocity;
+import com.hypixel.hytale.server.core.modules.splitvelocity.VelocityConfig;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
+import com.hypixel.hytale.server.core.universe.world.ParticleUtil;
+import com.hypixel.hytale.server.core.universe.world.SoundUtil;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
+import org.jspecify.annotations.NonNull;
 
 import javax.annotation.Nullable;
 
@@ -30,6 +37,7 @@ public class BoostPadSystem extends EntityTickingSystem<EntityStore> {
         }
 
         World world = cmd.getExternalData().getWorld();
+        EntityStore entityStore = world.getEntityStore();
 
         world.execute(() -> {
             Transform playerTransform = player.getTransform();
@@ -42,11 +50,41 @@ public class BoostPadSystem extends EntityTickingSystem<EntityStore> {
 
             BlockType blockType = world.getBlockType(bx, by, bz);
 
+            int blockRotation = world.getBlockRotationIndex(bx, by, bz);
+
             if (blockType != null && blockType.getId().equals(BOOST_PAD_BLOCK_ID)) {
-                player.sendMessage(Message.raw("You're standing on a Boost Pad"));
+
+                Vector3d newVelocity = getVector3d(blockRotation, 40.0);
+                Velocity playerVelocity = chunk.getComponent(index, Velocity.getComponentType());
+
+                if (playerVelocity == null) {
+                    return;
+                }
+
+                VelocityConfig velocityConfig = new VelocityConfig();
+
+                playerVelocity.addInstruction(newVelocity, velocityConfig, ChangeVelocityType.Set);
+                int soundIndex = SoundEvent.getAssetMap().getIndex("SFX_Avatar_Powers_Disable_Local");
+                SoundUtil.playSoundEvent3dToPlayer(player.getReference(), soundIndex, SoundCategory.SFX, pos, entityStore.getStore());
             }
         });
 
+    }
+
+    private static @NonNull Vector3d getVector3d(int blockRotation, double scale) {
+        Vector3d dir = switch (blockRotation) {
+            case 0 -> // north
+                    new Vector3d(0, 0, -1);
+            case 1 -> // west
+                    new Vector3d(-1, 0, 0);
+            case 2 -> // south
+                    new Vector3d(0, 0, 1);
+            case 3 -> // east
+                    new Vector3d(1, 0, 0);
+            default -> new Vector3d(0, 0, 0);
+        };
+
+        return dir.scale(scale);
     }
 
     @Override
