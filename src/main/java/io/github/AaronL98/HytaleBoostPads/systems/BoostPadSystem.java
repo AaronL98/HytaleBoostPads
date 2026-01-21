@@ -90,7 +90,7 @@ public class BoostPadSystem extends EntityTickingSystem<EntityStore> {
     @Nullable
     public Query<EntityStore> getQuery() {
         return Query.and(
-                PlayerRef.getComponentType()//, NPCEntity.getComponentType()
+                PlayerRef.getComponentType()
         );
     }
 

@@ -15,11 +15,6 @@ public class HytaleBoostPads extends JavaPlugin {
 
     @Override
     protected void setup() {
-    }
-
-    // In `start` because we want to register system using Player component after other plugins have had chance to register
-    @Override
-    protected void start() {
         this.getEntityStoreRegistry().registerSystem(new BoostPadSystem());
     }
 }
